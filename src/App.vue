@@ -1,30 +1,50 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <main class="container">
+    <h1>Ma TodoList</h1>
+    <TodoForm 
+      @add-task="addTask" 
+    />
+    <TodoList
+      :tasks="tasks"
+      @update-task="updateTask"
+      @delete-task="deleteTask"
+    />
+  </main>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script setup>
+import { ref, watch } from 'vue'
+import TodoForm from './components/TodoForm.vue'
+import TodoList from './components/TodoList.vue'
+
+// Liste des tâches
+const tasks = ref(JSON.parse(localStorage.getItem('tasks') || '[]'))
+
+// Ajouter une tâche
+function addTask(task) {
+  tasks.value.push({
+    id: Date.now(),
+    title: task,
+    status: 'todo',
+  })
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+// Modifier une tâche (par ex : changer son statut (Revenir dessus plus tard))
+function updateTask(updatedTask) {
+  const task = tasks.value.find(t => t.id === updatedTask.id)
+  if (task) {
+    task.status = updatedTask.status
+  }
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+// Supprimer une tâche
+function deleteTask(taskId) {
+  tasks.value = tasks.value.filter(t => t.id !== taskId)
 }
-</style>
+
+// 5. Sauvegarde auto dans localStorage (plustard si ajout d'une BDD dans la bdd avec système de connexion via PDO voir API)
+watch(tasks, () => {
+  localStorage.setItem('tasks', JSON.stringify(tasks.value))
+}, { deep: true })
+</script>
+
